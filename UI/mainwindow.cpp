@@ -9,6 +9,8 @@ MainWindow::MainWindow(QWidget *parent) :
 {
 
     ui->setupUi(this);
+    cdialog=new ConnDialog(this);
+    connect(ui->actionTCP,&QAction::triggered,this,&MainWindow::onConnShouldOpen);
     connect(ui->pushButton_3,&QPushButton::clicked,this,&MainWindow::onIPV4ShouldGen);
     connect(ui->pushButton_3_v6,&QPushButton::clicked,this,&MainWindow::onIPV6ShouldGen);
 }
@@ -19,10 +21,6 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::onIPV4ShouldGen(){
-    QString fpath=QFileDialog::getSaveFileName(this,"选择ipv4文件保存路径",QDir::homePath(),"IPV4文件 (*.ipv4)");
-    if(fpath.isEmpty()){
-        return;
-    }
     unsigned char DSCP_ECN=DSCP[ui->comboBox->currentIndex()]+ECN[ui->comboBox->currentIndex()];
     QString payload=ui->plainTextEdit_4->toPlainText();
     unsigned short length;
@@ -117,6 +115,11 @@ void MainWindow::onIPV4ShouldGen(){
         QMessageBox::warning(this,"警告","你的电脑出故障了，请重试。");
         return;
     }
+
+    QString fpath=QFileDialog::getSaveFileName(this,"选择ipv4文件保存路径",QDir::homePath(),"IPV4文件 (*.ipv4)");
+    if(fpath.isEmpty()){
+        return;
+    }
     FILE* f=fopen(fpath.toUtf8(),"w");
     if(f==nullptr){
         QMessageBox::warning(this,"警告","无法创建文件，请检查权限。");
@@ -129,4 +132,12 @@ void MainWindow::onIPV4ShouldGen(){
 
 void MainWindow::onIPV6ShouldGen(){
 
+}
+
+void MainWindow::onConnShouldOpen(){
+    if(cdialog!=nullptr){
+        cdialog->exec();
+    }else {
+        cdialog=new ConnDialog(this);
+    }
 }

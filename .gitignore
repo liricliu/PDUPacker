@@ -53,3 +53,7 @@ compile_commands.json
 
 .DS_Store
 build/
+*.ipv4
+*.ipv6
+*.arp
+*.eth

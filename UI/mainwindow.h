@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "conndialog.h"
 
 namespace Ui {
 class MainWindow;
@@ -18,11 +19,13 @@ public:
 public slots:
     void onIPV4ShouldGen();
     void onIPV6ShouldGen();
+    void onConnShouldOpen();
 
 private:
     Ui::MainWindow *ui;
+    ConnDialog* cdialog;
 
-    constexpr static unsigned char DSCP[22]={
+    const unsigned char DSCP[22]={
         0b00000000,//CS0
         0b00100000,//CS1
         0b01000000,//CS2
@@ -46,7 +49,7 @@ private:
         0b10111000,//EF PHB
         0b10110000 //VOICE-ADMIT
     };
-    constexpr static unsigned char ECN[4]={
+    const unsigned char ECN[4]={
         0b10,0b01,0b11,0b00
     };
 };
