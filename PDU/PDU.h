@@ -1,7 +1,7 @@
 #pragma once
 
 #define PDU_MAX_LOAD_SIZE 1500
-#define PDU_MIN_LOAD_SIZE 64
+#define PDU_MIN_LOAD_SIZE 46
 
 #define PDU_QIANDAO 0xAA
 #define PDU_SOF 0xAB
@@ -32,11 +32,11 @@ typedef struct PDU_t{
     char dst_mac[17];
     long load_length;
     char crc[4];
-    char buffer[PDU_MAX_LOAD_SIZE+32];
+    unsigned char buffer[PDU_MAX_LOAD_SIZE+32];
 } PDU;
 
 PDU* new_PDU(PDU_Type type);
-long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char* dst_mac);
+long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char* dst_mac,PDU_Load_Type loadtype);
 void set_PDU_src_mac(const char* src_mac);
 void set_PDU_dst_mac(const char* dst_mac);
 void parse_PDU(PDU* object);

@@ -25,6 +25,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++14
 
 SOURCES += \
+        PDU/PDU.c \
         PDU/commchannel.cpp \
         UI/conndialog.cpp \
         UI/main.cpp \

@@ -76,6 +76,9 @@ public:
         return true;
     }
     static bool is_mac(QString s){
+        if(s.size()!=17){
+            return false;
+        }
         QStringList sl=s.split(":");
         if(sl.count()!=6)
             return false;

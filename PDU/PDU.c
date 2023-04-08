@@ -37,7 +37,7 @@ PDU* new_PDU(PDU_Type type){
     }
 }
 
-long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char* dst_mac){
+long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char* dst_mac,PDU_Load_Type loadtype){
     FILE* f=fopen(source_file,"r");
     if(f==NULL){
         return -1;
@@ -49,11 +49,11 @@ long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char
         return -2;
     }
 
-    object->load_type=detect_load_type(object);
+    object->load_type=loadtype;
     switch (object->load_type)
     {
     case load_is_ipv4:
-        load_size=get_load_length_ipv6(internet_layer_pdu);
+        load_size=get_load_length_ipv4(internet_layer_pdu);
         break;
     case load_is_ipv6:
         load_size=get_load_length_ipv6(internet_layer_pdu);
@@ -65,6 +65,9 @@ long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char
     default:
         break;
     }
+    if(load_size>1500){
+        return -3;
+    }
 
     for(int i=0;i<17;i++){
         object->dst_mac[i]=dst_mac[i];
@@ -74,6 +77,46 @@ long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char
     //Now all ready, go packing PDU.
     memset(object->buffer,PDU_QIANDAO,7);
     object->buffer[7]=PDU_SOF;
-    memcpy(object->buffer+8,internet_layer_pdu,load_size);
+    //DST MAC
+    sscanf(dst_mac, "%hhX:%hhX:%hhX:%hhX:%hhX:%hhX", &(object->buffer)[8],&(object->buffer)[9],&(object->buffer)[10],&(object->buffer)[11],&(object->buffer)[12], &(object->buffer)[13]);
+    //SRC MAC
+    sscanf(src_mac, "%hhX:%hhX:%hhX:%hhX:%hhX:%hhX", &(object->buffer)[14],&(object->buffer)[15],&(object->buffer)[16],&(object->buffer)[17],&(object->buffer)[18], &(object->buffer)[19]);
+    
+    //Protocal
+    if(loadtype==load_is_any){
+        (object->buffer)[20]=(load_size+18)&0xff;
+        (object->buffer)[21]=(load_size+18)>>8;
+    }
+    if(loadtype==load_is_ipv4){
+        (object->buffer)[20]=0x08;
+        (object->buffer)[21]=0x00;
+    }
+    if(loadtype==load_is_ipv6){
+        (object->buffer)[20]=0x86;
+        (object->buffer)[21]=0xDD;
+    }
+    if(loadtype==load_is_arp){
+        (object->buffer)[20]=0x08;
+        (object->buffer)[21]=0x06;
+    }
+    if(loadtype==load_is_rarp){
+        (object->buffer)[20]=0x08;
+        (object->buffer)[21]=0x35;
+    }
+
+    memcpy(object->buffer+22,internet_layer_pdu,load_size);
+
+    //CRC
+    if(load_size<PDU_MIN_LOAD_SIZE){
+        (object->buffer)[PDU_MIN_LOAD_SIZE+22]=0xff;
+        (object->buffer)[PDU_MIN_LOAD_SIZE+23]=0xff;
+        (object->buffer)[PDU_MIN_LOAD_SIZE+24]=0xff;
+        (object->buffer)[PDU_MIN_LOAD_SIZE+25]=0xff;
+    }else{
+        (object->buffer)[load_size+22]=0xff;
+        (object->buffer)[load_size+23]=0xff;
+        (object->buffer)[load_size+24]=0xff;
+        (object->buffer)[load_size+25]=0xff;
+    }
     return 0;
 }

@@ -105,17 +105,17 @@ void ConnDialog::randIP(){
 void ConnDialog::randMAC(){
     qsrand(QTime(0,0,0).secsTo(QTime::currentTime()));
     QString mac=QString();
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     mac.append(':');
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     mac.append(':');
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     mac.append(':');
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     mac.append(':');
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     mac.append(':');
-    mac.append(QString::number(qrand()%256,16).toUpper());
+    mac.append(QString("%1").arg(qrand()%256,2,16,QLatin1Char('0')));
     ui->lineEdit->setText(mac);
 }
 void ConnDialog::localIP(){

@@ -15,6 +15,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_3_v6,&QPushButton::clicked,this,&MainWindow::onIPV6ShouldGen);
     connect(ui->pushButton_5,&QPushButton::clicked,this,&MainWindow::onUseChanAddr);
     connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::onUseChanAddrIP);
+    connect(ui->pushButton_2,&QPushButton::clicked,this,&MainWindow::onTX);
+    connect(CommChannel::instance(),&CommChannel::rx,this,&MainWindow::onRX);
 }
 
 MainWindow::~MainWindow()
@@ -160,4 +162,53 @@ void MainWindow::onUseChanAddrIP(){
     if(!CommChannel::instance()->get_ip().isEmpty()){
         ui->lineEdit_3->setText(CommChannel::instance()->get_ip());
     }
+}
+
+void MainWindow::onRX(){
+    PDU* pdu=new_PDU(type_ethernet_v2);
+    pdu_list.append(pdu);
+    QDateTime curDateTime=QDateTime::currentDateTime();
+    ui->listWidget->addItem("接收到的包："+curDateTime.toString("YY-MM-DD-hh:mm:ss"));
+    memcpy(pdu->buffer,CommChannel::instance()->buffer,CommChannel::instance()->buffer.size());
+    //CommChannel::instance()->buffer;
+
+
+}
+
+void MainWindow::onTX(){
+    QString fpath=QFileDialog::getOpenFileName(this,"选择待封帧文件",QDir::homePath(),"上层协议 (*.ipv4 *.ipv6 *.arp *.rarp *.raw)");
+    if(fpath.isEmpty()){
+        return;
+    }
+    PDU* pdu=new_PDU(type_ethernet_v2);
+    if(!CommChannel::is_mac(ui->lineEdit_6->text())){
+        QMessageBox::warning(this,"警告","MAC格式错误");
+        return;
+    }
+    if(!CommChannel::is_mac(ui->lineEdit_7->text())){
+        QMessageBox::warning(this,"警告","MAC格式错误");
+        return;
+    }
+    PDU_Load_Type loadtype=load_is_any;
+    QStringList sl=fpath.split('.');
+    if(sl[sl.count()-1]=="ipv4"){
+        loadtype=load_is_ipv4;
+    }
+    if(sl[sl.count()-1]=="ipv6"){
+        loadtype=load_is_ipv6;
+    }
+    if(sl[sl.count()-1]=="arp"){
+        loadtype=load_is_arp;
+    }
+    if(sl[sl.count()-1]=="rarp"){
+        loadtype=load_is_rarp;
+    }
+    if(sl[sl.count()-1]=="raw"){
+        loadtype=load_is_any;
+    }
+    if(pack_PDU(pdu,fpath.toStdString().c_str(),ui->lineEdit_6->text().toStdString().c_str(),ui->lineEdit_7->text().toStdString().c_str(),loadtype)!=0){
+        QMessageBox::warning(this,"警告","PDU创建失败");
+        return;
+    }
+    CommChannel::instance()->tx((const char*)pdu->buffer,pdu->load_length+26);
 }

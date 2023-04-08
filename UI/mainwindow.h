@@ -3,6 +3,10 @@
 
 #include <QMainWindow>
 #include "conndialog.h"
+extern "C"{
+#include "PDU/PDU.h"
+}
+
 
 namespace Ui {
 class MainWindow;
@@ -22,6 +26,8 @@ public slots:
     void onConnShouldOpen();
     void onUseChanAddr();
     void onUseChanAddrIP();
+    void onRX();
+    void onTX();
 
 private:
     Ui::MainWindow *ui;
@@ -54,6 +60,7 @@ private:
     const unsigned char ECN[4]={
         0b10,0b01,0b11,0b00
     };
+    QList<PDU*> pdu_list;
 };
 
 #endif // MAINWINDOW_H
