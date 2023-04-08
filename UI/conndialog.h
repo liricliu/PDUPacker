@@ -2,6 +2,7 @@
 #define CONNDIALOG_H
 
 #include <QDialog>
+#include "PDU/commchannel.h"
 
 namespace Ui {
 class ConnDialog;
@@ -17,6 +18,14 @@ public:
 
 public slots:
     void setChann(int index);
+    void connectClicked();
+    void randIP();
+    void randMAC();
+    void localIP();
+    void localMAC();
+    void onConnReady();
+    void onConnDown();
+
 private:
     Ui::ConnDialog *ui;
     void accept();

@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -25,12 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++14
 
 SOURCES += \
+        PDU/commchannel.cpp \
         UI/conndialog.cpp \
         UI/main.cpp \
         UI/mainwindow.cpp
 
 HEADERS += \
         PDU/PDU.h \
+        PDU/commchannel.h \
         UI/conndialog.h \
         UI/mainwindow.h
 

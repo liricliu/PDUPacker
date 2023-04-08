@@ -13,6 +13,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionTCP,&QAction::triggered,this,&MainWindow::onConnShouldOpen);
     connect(ui->pushButton_3,&QPushButton::clicked,this,&MainWindow::onIPV4ShouldGen);
     connect(ui->pushButton_3_v6,&QPushButton::clicked,this,&MainWindow::onIPV6ShouldGen);
+    connect(ui->pushButton_5,&QPushButton::clicked,this,&MainWindow::onUseChanAddr);
+    connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::onUseChanAddrIP);
 }
 
 MainWindow::~MainWindow()
@@ -139,5 +141,23 @@ void MainWindow::onConnShouldOpen(){
         cdialog->exec();
     }else {
         cdialog=new ConnDialog(this);
+    }
+}
+
+void MainWindow::onUseChanAddr(){
+    if(!CommChannel::instance()->get_o_mac().isEmpty()){
+        ui->lineEdit_7->setText(CommChannel::instance()->get_o_mac());
+    }
+    if(!CommChannel::instance()->get_mac().isEmpty()){
+        ui->lineEdit_6->setText(CommChannel::instance()->get_mac());
+    }
+}
+
+void MainWindow::onUseChanAddrIP(){
+    if(!CommChannel::instance()->get_o_ip().isEmpty()){
+        ui->lineEdit_8->setText(CommChannel::instance()->get_o_ip());
+    }
+    if(!CommChannel::instance()->get_ip().isEmpty()){
+        ui->lineEdit_3->setText(CommChannel::instance()->get_ip());
     }
 }

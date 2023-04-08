@@ -20,6 +20,8 @@ public slots:
     void onIPV4ShouldGen();
     void onIPV6ShouldGen();
     void onConnShouldOpen();
+    void onUseChanAddr();
+    void onUseChanAddrIP();
 
 private:
     Ui::MainWindow *ui;

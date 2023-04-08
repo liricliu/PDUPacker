@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
-    <height>500</height>
+    <width>1000</width>
+    <height>600</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -18,8 +18,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>900</width>
-    <height>500</height>
+    <width>1000</width>
+    <height>600</height>
    </size>
   </property>
   <property name="maximumSize">
@@ -74,9 +74,20 @@
       </item>
       <item row="3" column="0" colspan="3">
        <widget class="QComboBox" name="comboBox">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
         <item>
          <property name="text">
-          <string>TCP虚拟信道</string>
+          <string>TCP虚拟信道（客户端）</string>
+         </property>
+        </item>
+        <item>
+         <property name="text">
+          <string>TCP虚拟信道（服务端）</string>
          </property>
         </item>
         <item>
@@ -138,6 +149,20 @@
           </item>
           <item>
            <widget class="QLineEdit" name="lineEdit_4"/>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="page_3">
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="label_12">
+            <property name="text">
+             <string>端口</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEdit_5"/>
           </item>
          </layout>
         </widget>

@@ -867,7 +867,7 @@
   </action>
   <action name="actionTCP">
    <property name="text">
-    <string>TCP虚拟信道</string>
+    <string>设置信道</string>
    </property>
   </action>
  </widget>
