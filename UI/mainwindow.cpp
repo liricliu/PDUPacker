@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->pushButton_5,&QPushButton::clicked,this,&MainWindow::onUseChanAddr);
     connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::onUseChanAddrIP);
     connect(ui->pushButton_2,&QPushButton::clicked,this,&MainWindow::onTX);
+    connect(ui->pushButton,&QPushButton::clicked,this,&MainWindow::onShouldParse);
     connect(CommChannel::instance(),&CommChannel::rx,this,&MainWindow::onRX);
 }
 
@@ -168,9 +169,8 @@ void MainWindow::onRX(){
     PDU* pdu=new_PDU(type_ethernet_v2);
     pdu_list.append(pdu);
     QDateTime curDateTime=QDateTime::currentDateTime();
-    ui->listWidget->addItem("接收到的包："+curDateTime.toString("YY-MM-DD-hh:mm:ss"));
+    ui->listWidget->addItem("接收到的包："+curDateTime.toString("yyyy-MM-dd-hh:mm:ss"));
     memcpy(pdu->buffer,CommChannel::instance()->buffer,CommChannel::instance()->buffer.size());
-    //CommChannel::instance()->buffer;
 
 
 }
@@ -210,5 +210,58 @@ void MainWindow::onTX(){
         QMessageBox::warning(this,"警告","PDU创建失败");
         return;
     }
-    CommChannel::instance()->tx((const char*)pdu->buffer,pdu->load_length+26);
+    if(pdu->load_length<PDU_MIN_LOAD_SIZE){
+        CommChannel::instance()->tx((const char*)pdu->buffer,PDU_MIN_LOAD_SIZE+26);
+    }else{
+        CommChannel::instance()->tx((const char*)pdu->buffer,pdu->load_length+26);
+    }
+    free(pdu);
+}
+
+void MainWindow::onShouldParse(){
+    int index=ui->listWidget->currentRow();
+    if(index<0) return;
+    PDU* pdu=pdu_list[index];
+    parse_PDU(pdu);
+    int tocount=0;
+    if(pdu->load_length<PDU_MIN_LOAD_SIZE){
+        tocount=PDU_MIN_LOAD_SIZE+26;
+    }else{
+        tocount=pdu->load_length+26;
+    }
+    QByteArray ba((const char*)pdu->buffer,tocount);
+    ui->plainTextEdit_3->setPlainText(ba.toHex());
+    QByteArray bb(((const char*)pdu->buffer)+22,pdu->load_length);
+    ui->plainTextEdit_2->setPlainText(bb.toHex());
+    ui->lineEdit->setText(pdu->src_mac);
+    ui->lineEdit_4->setText(pdu->dst_mac);
+    ui->plainTextEdit->clear();
+    ui->plainTextEdit->appendPlainText("载荷长度：");
+    ui->plainTextEdit->appendPlainText(QString::number(pdu->load_length));
+    ui->plainTextEdit->appendPlainText("上层协议：");
+    switch (pdu->load_type) {
+    case load_is_ipv4:
+        ui->plainTextEdit->appendPlainText("ipv4");
+        char s[16];
+        memset(s,0,16);
+        sprintf(s,"%u.%u.%u.%u",pdu->buffer[34],pdu->buffer[35],pdu->buffer[36],pdu->buffer[37]);
+        ui->plainTextEdit->appendPlainText("源IP：");
+        ui->plainTextEdit->appendPlainText(s);
+        sprintf(s,"%u.%u.%u.%u",pdu->buffer[38],pdu->buffer[39],pdu->buffer[40],pdu->buffer[41]);
+        ui->plainTextEdit->appendPlainText("矢IP：");
+        ui->plainTextEdit->appendPlainText(s);
+        break;
+    case load_is_ipv6:
+        ui->plainTextEdit->appendPlainText("ipv6");
+        break;
+    case load_is_arp:
+        ui->plainTextEdit->appendPlainText("arp");
+        break;
+    case load_is_rarp:
+        ui->plainTextEdit->appendPlainText("rarp");
+        break;
+    case load_is_any:
+        ui->plainTextEdit->appendPlainText("无");
+        break;
+    }
 }

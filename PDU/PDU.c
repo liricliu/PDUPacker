@@ -4,17 +4,25 @@
 #include <string.h>
 
 PDU_Type detect_load_type(PDU* object){
-    return load_is_ipv4;
+    if((object->buffer)[20]==0x08&&(object->buffer)[21]==0x00)
+        return load_is_ipv4;
+    if((object->buffer)[20]==0x86&&(object->buffer)[21]==0xDD)
+        return load_is_ipv6;
+    if((object->buffer)[20]==0x08&&(object->buffer)[21]==0x06)
+        return load_is_arp;
+    if((object->buffer)[20]==0x08&&(object->buffer)[21]==0x35)
+        return load_is_rarp;
+    return load_is_any;
 }
 
-long get_load_length_ipv4(const char* str){
+long get_load_length_ipv4(const unsigned char* str){
     long toret=0;
     toret+=str[2];
     toret+=str[3]*256;
     return toret;
 }
 
-long get_load_length_ipv6(const char* str){
+long get_load_length_ipv6(const unsigned char* str){
     long toret=0;
     toret+=str[4];
     toret+=str[5]*256;
@@ -38,7 +46,7 @@ PDU* new_PDU(PDU_Type type){
 }
 
 long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char* dst_mac,PDU_Load_Type loadtype){
-    FILE* f=fopen(source_file,"r");
+    FILE* f=fopen(source_file,"rb");
     if(f==NULL){
         return -1;
     }
@@ -68,7 +76,7 @@ long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char
     if(load_size>1500){
         return -3;
     }
-
+    object->load_length=load_size;
     for(int i=0;i<17;i++){
         object->dst_mac[i]=dst_mac[i];
         object->src_mac[i]=src_mac[i];
@@ -119,4 +127,25 @@ long pack_PDU(PDU* object,const char* source_file,const char* src_mac,const char
         (object->buffer)[load_size+25]=0xff;
     }
     return 0;
+}
+
+void parse_PDU(PDU* object){
+    object->load_type=detect_load_type(object);
+    switch(object->load_type){
+    case load_is_ipv4:
+        object->load_length=get_load_length_ipv4(object->buffer+22);
+        break;
+    case load_is_ipv6:
+        object->load_length=get_load_length_ipv6(object->buffer+22);
+        break;
+    case load_is_arp:
+    case load_is_rarp:
+        object->load_length=28;
+        break;
+    default:
+        object->load_length=((object->buffer)[20])+((object->buffer)[21]<<8)-18;
+        break;
+    }
+    sprintf(object->dst_mac,"%02X:%02X:%02X:%02X:%02X:%02X",(object->buffer)[8],(object->buffer)[9],(object->buffer)[10],(object->buffer)[11],(object->buffer)[12],(object->buffer)[13]);
+    sprintf(object->src_mac,"%02X:%02X:%02X:%02X:%02X:%02X",(object->buffer)[14],(object->buffer)[15],(object->buffer)[16],(object->buffer)[17],(object->buffer)[18],(object->buffer)[19]);
 }

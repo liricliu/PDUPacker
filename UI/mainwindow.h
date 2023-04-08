@@ -28,6 +28,7 @@ public slots:
     void onUseChanAddrIP();
     void onRX();
     void onTX();
+    void onShouldParse();
 
 private:
     Ui::MainWindow *ui;

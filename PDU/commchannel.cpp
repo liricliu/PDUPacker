@@ -52,9 +52,9 @@ bool CommChannel::connect_chan(){
             totx.append(mac);
             totx.append('\x00');
             tx(totx.data(),totx.size());
+            connect(mSocket,&QTcpSocket::disconnected,this,&CommChannel::onDisconn);
             QMessageBox::information(nullptr,"提示","有新的连接");
         });
-        connect(mSocket,&QTcpSocket::disconnected,this,&CommChannel::onDisconn);
         break;
     case ChannelType::com:
         break;

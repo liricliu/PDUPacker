@@ -28,8 +28,8 @@ typedef enum PDU_Load_Type_t{
 typedef struct PDU_t{
     PDU_Type type;
     PDU_Load_Type load_type;
-    char src_mac[17];
-    char dst_mac[17];
+    char src_mac[18];
+    char dst_mac[18];
     long load_length;
     char crc[4];
     unsigned char buffer[PDU_MAX_LOAD_SIZE+32];
