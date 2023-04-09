@@ -31,8 +31,9 @@ typedef struct PDU_t{
     char src_mac[18];
     char dst_mac[18];
     long load_length;
-    char crc[4];
+    unsigned char crc[4];
     unsigned char buffer[PDU_MAX_LOAD_SIZE+32];
+    char crc_chk;
 } PDU;
 
 PDU* new_PDU(PDU_Type type);

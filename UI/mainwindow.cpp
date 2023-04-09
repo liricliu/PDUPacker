@@ -12,7 +12,6 @@ MainWindow::MainWindow(QWidget *parent) :
     cdialog=new ConnDialog(this);
     connect(ui->actionTCP,&QAction::triggered,this,&MainWindow::onConnShouldOpen);
     connect(ui->pushButton_3,&QPushButton::clicked,this,&MainWindow::onIPV4ShouldGen);
-    connect(ui->pushButton_3_v6,&QPushButton::clicked,this,&MainWindow::onIPV6ShouldGen);
     connect(ui->pushButton_5,&QPushButton::clicked,this,&MainWindow::onUseChanAddr);
     connect(ui->pushButton_4,&QPushButton::clicked,this,&MainWindow::onUseChanAddrIP);
     connect(ui->pushButton_2,&QPushButton::clicked,this,&MainWindow::onTX);
@@ -206,8 +205,14 @@ void MainWindow::onTX(){
     if(sl[sl.count()-1]=="raw"){
         loadtype=load_is_any;
     }
-    if(pack_PDU(pdu,fpath.toStdString().c_str(),ui->lineEdit_6->text().toStdString().c_str(),ui->lineEdit_7->text().toStdString().c_str(),loadtype)!=0){
-        QMessageBox::warning(this,"警告","PDU创建失败");
+    int info=0;
+    if((info=pack_PDU(pdu,fpath.toStdString().c_str(),ui->lineEdit_6->text().toStdString().c_str(),ui->lineEdit_7->text().toStdString().c_str(),loadtype))!=0){
+        if(info==-1)
+            QMessageBox::warning(this,"警告","PDU创建失败,无法打开载荷文件");
+        if(info==-2)
+            QMessageBox::warning(this,"警告","PDU创建失败,无效载荷文件或读取出错");
+        if(info==-3)
+            QMessageBox::warning(this,"警告","PDU创建失败,载荷文件具有上层协议时不得超过1500字节");
         return;
     }
     if(pdu->load_length<PDU_MIN_LOAD_SIZE){
@@ -263,5 +268,15 @@ void MainWindow::onShouldParse(){
     case load_is_any:
         ui->plainTextEdit->appendPlainText("无");
         break;
+    }
+    ui->plainTextEdit->appendPlainText("CRC: ");
+    char ss[9];
+    memset(ss,0,9);
+    sprintf(ss,"%02X%02X%02X%02X",pdu->crc[0],pdu->crc[1],pdu->crc[2],pdu->crc[3]);
+    ui->plainTextEdit->appendPlainText(ss);
+    if(pdu->crc_chk==1){
+        ui->plainTextEdit->appendPlainText("CRC校验通过");
+    }else{
+        ui->plainTextEdit->appendPlainText("CRC校验未通过");
     }
 }
