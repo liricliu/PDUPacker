@@ -77,7 +77,14 @@ bool CommChannel::connect_chan(){
             serial->setFlowControl(QSerialPort::NoFlowControl);
             serial->setPortName(com_name);
             if(!serial->open(QIODevice::ReadWrite)){
-                QMessageBox::warning(nullptr,"警告","COM口打开失败");
+                QByteArray totx=QByteArray();
+                totx.append('\x00');
+                totx.append(ip);
+                totx.append('\x00');
+                totx.append(mac);
+                totx.append('\x00');
+                tx(totx.data(),totx.size());
+                QMessageBox::warning(nullptr,"警告","COM口打开失败或已经被打开");
                 return false;
             }else{
                 connect(serial,&QSerialPort::readyRead,this,&CommChannel::tcp_rx);
