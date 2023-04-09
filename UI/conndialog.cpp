@@ -17,6 +17,9 @@ ConnDialog::ConnDialog(QWidget *parent) :
     connect(ui->pushButton_2,&QPushButton::clicked,this,&ConnDialog::randMAC);
     connect(CommChannel::instance(),&CommChannel::connection_ready,this,&ConnDialog::onConnReady);
     connect(CommChannel::instance(),&CommChannel::disconnected,this,&ConnDialog::onConnDown);
+    connect(ui->pushButton_6,&QPushButton::clicked,this,&ConnDialog::refreshCOM);
+    connect(ui->comboBox_2,SIGNAL(currentIndexChanged(int)),this,SLOT(setCOM(int)));
+    refreshCOM();
 }
 
 ConnDialog::~ConnDialog()
@@ -149,4 +152,14 @@ void ConnDialog::onConnDown(){
     ui->label_5->setText("未连接");
     ui->label_4->setText("未知");
     ui->label_8->setText("未知");
+}
+void ConnDialog::refreshCOM(){
+    CommChannel::instance()->refreshCOM();
+    foreach(QString sss,CommChannel::instance()->comnames){
+        ui->comboBox_2->clear();
+        ui->comboBox_2->addItem(sss);
+    }
+}
+void ConnDialog::setCOM(int index){
+
 }

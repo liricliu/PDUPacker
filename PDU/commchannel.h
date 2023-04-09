@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QtNetwork>
+#include <QtSerialPort>
 
 enum class ChannelType{
     unset,
@@ -16,6 +17,7 @@ class CommChannel : public QObject
     Q_OBJECT
 public:
     QByteArray buffer;
+    QList<QString> comnames;
     static void init(){
         _instance=new CommChannel;
         if(_instance==nullptr){
@@ -129,6 +131,7 @@ private:
     QString com_name;
     QTcpServer* mServer;
     QTcpSocket* mSocket;
+    QSerialPort* serial;
     QString peer_ip;
 signals:
     void connection_ready();
@@ -137,6 +140,7 @@ signals:
 public slots:
     void tcp_rx();
     void onDisconn();
+    void refreshCOM();
 
 
 };

@@ -25,6 +25,8 @@ public slots:
     void localMAC();
     void onConnReady();
     void onConnDown();
+    void refreshCOM();
+    void setCOM(int index);
 
 private:
     Ui::ConnDialog *ui;

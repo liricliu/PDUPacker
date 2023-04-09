@@ -8,6 +8,19 @@ CommChannel::CommChannel(QObject *parent) : QObject(parent)
     listen_port=0;
     type=ChannelType::unset;
     mServer = new QTcpServer(this);
+    serial = new QSerialPort;
+    foreach(const QSerialPortInfo &info,QSerialPortInfo::availablePorts())
+        {
+            serial->setPort(info);                      // 在对象中设置串口
+            if(serial->open(QIODevice::ReadWrite))      // 以读写方式打开串口
+            {
+                comnames.append(info.portName());  // 添加计算机中的端口
+                serial->close();                        // 关闭
+            } else
+            {
+                qDebug() << "串口打开失败，请重试";
+            }
+        }
 }
 
 bool CommChannel::connect_chan(){
@@ -57,6 +70,25 @@ bool CommChannel::connect_chan(){
         });
         break;
     case ChannelType::com:
+            serial->setBaudRate(QSerialPort::Baud115200);
+            serial->setParity(QSerialPort::NoParity);
+            serial->setDataBits(QSerialPort::Data8);
+            serial->setStopBits(QSerialPort::OneStop);
+            serial->setFlowControl(QSerialPort::NoFlowControl);
+            serial->setPortName(com_name);
+            if(!serial->open(QIODevice::ReadWrite)){
+                QMessageBox::warning(nullptr,"警告","COM口打开失败");
+                return false;
+            }else{
+                connect(serial,&QSerialPort::readyRead,this,&CommChannel::tcp_rx);
+                QByteArray totx=QByteArray();
+                totx.append('\x00');
+                totx.append(ip);
+                totx.append('\x00');
+                totx.append(mac);
+                totx.append('\x00');
+                tx(totx.data(),totx.size());
+            }
         break;
     }
     return true;
@@ -73,6 +105,11 @@ void CommChannel::tx(const char* cc,int length){
         mSocket->write(cc,length);
         break;
     case ChannelType::com:
+        if(!serial->isWritable()){
+            QMessageBox::warning(nullptr,"警告","信道尚未连接");
+            return;
+        }
+        serial->write(cc,length);
         break;
     case ChannelType::unset:
         QMessageBox::warning(nullptr,"警告","信道尚未连接");
@@ -82,7 +119,11 @@ void CommChannel::tx(const char* cc,int length){
 }
 
 void CommChannel::tcp_rx(){
-    buffer = mSocket->readAll();
+    if(type==ChannelType::com){
+        buffer=serial->readAll();
+    }else{
+        buffer = mSocket->readAll();
+    }
     //给包分类，如果是以太网帧则emit rx，否则emit connection_ready
     if((buffer.data())[0]=='\xAA'){
         emit rx();
@@ -105,4 +146,20 @@ void CommChannel::tcp_rx(){
 
 void CommChannel::onDisconn(){
     emit disconnected();
+}
+
+void CommChannel::refreshCOM(){
+    comnames.clear();
+    foreach(const QSerialPortInfo &info,QSerialPortInfo::availablePorts())
+        {
+            serial->setPort(info);                      // 在对象中设置串口
+            if(serial->open(QIODevice::ReadWrite))      // 以读写方式打开串口
+            {
+                comnames.append(info.portName());  // 添加计算机中的端口
+                serial->close();                        // 关闭
+            } else
+            {
+                qDebug() << "串口打开失败，请重试";
+            }
+        }
 }
